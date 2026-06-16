@@ -31,8 +31,6 @@ This approach is useful because the board can analyse camera data directly and p
 
 ## Hardware Used
 
-The following hardware was used during testing:
-
 | Hardware                                                | Purpose                                |
 | ------------------------------------------------------- |----------------------------------------|
 | BeagleY-AI board                                        | Main board for the Edge AI demo        |
