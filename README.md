@@ -1,6 +1,6 @@
-# BeagleY-AI Edge AI Demo Using a USB Webcam
+# BeagleY-AI Edge AI Demo Using USB Webcam and CSI Camera Module
 
-This page describes the first setup of the BeagleY-AI board with a USB webcam. It also documents practical difficulties, possible solutions, and notes for future users.
+This page describes the setup and testing of the BeagleY-AI board with two camera configurations: first with a USB webcam, and later with a CSI camera module connected using a ribbon cable.
 
 ## Board Overview
 
@@ -25,24 +25,32 @@ Edge AI refers to artificial intelligence models running locally on a device, wh
 
 The basic idea is:
 
-USB webcam → BeagleY-AI → AI model → detection result
+Camera input → BeagleY-AI → Edge AI model → detection result
 
 This approach is useful because the board can analyse camera data directly and produce detection results locally. As a result, the system can respond faster and does not fully depend on cloud processing or a network connection.
 
 ## Hardware Used
 
-The following hardware was used:
+The following hardware was used during testing:
 
-| Hardware                 | Purpose                            |
-| ------------------------ | ---------------------------------- |
-| BeagleY-AI board         | Main board for the demo            |
-| 64 GB microSD card       | Storage used for flashing OS image |
-| USB-C power supply       | Power supply for the board         |
-| Logitech C250 USB webcam | Camera input                       |
-| HDMI display             | Visual output for the Edge AI GUI  |
-| USB mouse                | GUI control                        |
-| USB keyboard             | Text input and terminal control    |
-| Laptop                   | Setup computer                     |
+| Hardware                                                | Purpose                                |
+| ------------------------------------------------------- |----------------------------------------|
+| BeagleY-AI board                                        | Main board for the Edge AI demo        |
+| 64 GB microSD card                                      | Storage used for flashing the OS image |
+| USB-C power supply                                      | Power supply for the board             |
+| Logitech C250 USB webcam                                | Camera input for Demo 1                |
+| Raspberry Pi Camera Module 2 (IMX219) with ribbon cable | Camera input for Demo 2                |
+| Active cooling system / fan                             | Cooling during testing                 |
+| HDMI display                                            | Visual output for the Edge AI GUI      |
+| USB mouse                                               | GUI control                            |
+| USB keyboard                                            | Text input and terminal control        |
+| Laptop                                                  | Setup computer                         |
+
+Two camera setups were tested:
+
+* Demo 1: Logitech C250 USB webcam
+* Demo 2: Raspberry Pi Camera Module 2 (IMX219) 
+
 
 ## Setup Steps
 
@@ -52,7 +60,7 @@ The following hardware was used:
    Useful links:
 
    * [Link to recommended OS image](https://www.beagleboard.org/distros/beagley-ai-ti-sdk-edge-ai-11-00-00-08-2025-09-06)
-   * [Link to boot tool: bb-imager](https://www.beagleboard.org/bb-imager)
+   * [Link to flashing tool: bb-imager](https://www.beagleboard.org/bb-imager)
    * [How to flash OS using bb-imager](https://docs.beagleboard.org/boards/beagley/ai/02-quick-start.html#beagley-ai-bb-imager)
 
    The minimum required selections in bb-imager are the device name, operating system image, and target storage. Other custom options, such as username, password, network settings, and other settings, can be skipped if they are not needed.
@@ -65,21 +73,15 @@ The following hardware was used:
 2. Insert the microSD card into the BeagleY-AI board.
 
 
-3. Connect the peripherals: power supply, HDMI display, USB keyboard, USB mouse, and USB webcam.
+3. Connect the required peripherals: power supply, HDMI display, USB keyboard, USB mouse, and active cooling system. For Demo 1, connect the Logitech C250 USB webcam. For Demo 2, connect the Raspberry Pi Camera Module 2 IMX219 using the ribbon cable.
 
 
 4. Boot the board and check that the system starts correctly.
 
    After booting, the board opens a terminal login screen. According to the official Edge AI documentation, the default login user is `root`, and no password is required.
 
-   Basic system verification commands:
-
-   ```bash
-   uname -a
-   ip a
-   ```
-
-5. Check whether the USB webcam is detected.
+## Demo 1: Logitech C250 USB Webcam
+* Check whether the USB webcam is detected.
 
    Useful commands for checking the webcam:
 
@@ -96,7 +98,7 @@ The following hardware was used:
    *Figure 3. USB devices detected by the system, including Logitech Webcam C250.*
 
 
-6. Start a video stream using the detected webcam.
+* Start a video stream using the detected webcam.
 
    After the webcam is connected, the available video devices are checked with:
 
@@ -117,7 +119,7 @@ The following hardware was used:
    *Figure 4. Live video stream from the Logitech C250 webcam.*
 
 
-7. Start the Edge AI graphical interface.
+* Start the Edge AI graphical interface.
 
    The Edge AI graphical interface is started with the following command:
 
@@ -139,30 +141,16 @@ The following hardware was used:
    *Figure 6. Image Classification demo running in the Edge AI gallery.*
 
 
-   **Note:** The top-right corner of the interface shows useful runtime information, such as FPS and board temperature. FPS means frames per second and indicates how fast the image stream is being processed. The temperature value can be used to monitor the board during testing, especially when running without active cooling.
+   **Note:** The top-right corner of the interface shows useful runtime information, such as FPS (frames per second) and board temperature.
 
-## Difficulties and Limitations
+## Difficulties and Limitations of Demo 1
 
-During testing, the camera stream worked, but running the camera together with the object detection demo was not stable in this setup. The system froze during the test: the keyboard and mouse became inactive, and the board temperature shown in the Edge AI interface increased to around 80 °C.
-
-Active cooling was not available during this test, so the demo was tested only as far as possible. For future testing, active cooling is recommended, especially when running camera-based AI demos for a longer time.
+During testing with the Logitech C250 USB webcam, the camera stream worked correctly. However, running the USB webcam together with the Edge AI object detection demo was not stable in this setup. The system froze during the test, and the keyboard and mouse became inactive.
 
 Useful command to stop the Edge AI GUI:
 
 ```bash
 killall edgeai-gui-app
-```
-
-Useful command to check the board temperature from the terminal:
-
-```bash
-cat /sys/class/thermal/thermal_zone0/temp
-```
-
-The value is shown in millidegrees Celsius. For example:
-
-```text
-61465 = 61 °C
 ```
 
 If the graphical interface is open but the terminal is needed, try switching to another terminal using:
@@ -175,6 +163,31 @@ Ctrl + Alt + F3
 
 If the system becomes fully unresponsive and keyboard or mouse input does not work, the last option is to power off the board. This should be used only when the system cannot be controlled in any other way.
 
-**Note:** The official documentation also notes that USB on BeagleY-AI can be unreliable and may fail to initialize. This can affect USB devices such as a mouse or camera. If this happens, rebooting the board is recommended.
+In this test, the keyboard and mouse became inactive during the attempt to run the USB webcam live-stream object detection demo. Because of this, the object detection test with the USB webcam was not completed and requires further investigation. 
 
-In this test, the keyboard and mouse became inactive during the attempt to run the webcam live-stream object detection demo. Because of this, the object detection test was not completed. The camera-based object detection demo could be repeated in the future by adding an active cooling system to the setup.
+## Demo 2: Raspberry Pi Camera Module 2 (IMX219)
+* Configure the camera settings according to the official BeagleY-AI documentation:
+
+  * [Instructions for setting up the camera module](https://docs.beagleboard.org/boards/beagley/ai/demos/using-edge-ai.html#camera-configuration)
+
+* Start the Edge AI graphical interface.
+
+  The Edge AI graphical interface is started with the following command:
+
+  ```bash
+  edgeai-gui-app --platform linuxfb
+  ```
+
+* Choose **Custom** from the menu on the left and select:
+
+  * **Input type:** camera
+  * **Camera:** attached Raspberry Pi Camera Module 2 (IMX219)
+  * **Model:** suitable Edge AI model
+
+In this demo, the Raspberry Pi Camera Module 2 (IMX219) was used together with an Edge AI model. The setup successfully demonstrated camera-based object/face detection. No major limitations were observed during this test.
+
+## Conclusion and Recommendation
+
+The BeagleY-AI board was successfully set up with the recommended TI Edge AI for BeagleY-AI image. Two camera setups were tested: a Logitech C250 USB webcam and a Raspberry Pi Camera Module 2 (IMX219).
+
+The USB webcam was detected correctly and worked for a basic video stream, but it was not stable when used as input for the Edge AI object detection demo. The Raspberry Pi Camera Module 2 (IMX219) worked more reliably as the camera input for the Edge AI demo, and therefore this camera module is recommended when running camera-based Edge AI on BeagleY-AI.
